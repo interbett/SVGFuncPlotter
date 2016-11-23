@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "libSVG.h"
-
+#include <math.h>
 #define SVG_HEIGHT (N + 1) * 30 * 2
 #define SVG_WIDTH (N + 1) * 30 * 2
 #define X_MIN (N + 1) * 30
@@ -23,7 +23,7 @@ double y_svg2mat(double ySVG){
 
     double Ymat;
 
-   Ymat = Y_MIN - (ySVG + N + 1) * 30;
+   Ymat =  Y_MIN - (ySVG + N + 1) * 30;
 
 
     return Ymat;
@@ -79,14 +79,17 @@ int main() {
         }
     }
 
-    double x,y;
-    x = x_svg2mat (11);
-    y = y_svg2mat (12);
-    printf("%lf   %lf",x,y);
+    double x,z,y,v,w;
+    for (w=-N ; w<= N +1 ; w=w+0.01){
+    x = x_svg2mat ((w));
+    z = x_svg2mat ((w-1));
+    y = y_svg2mat (sin(w));
+    v = y_svg2mat (sin(w-1));
 
-    svg_text(svg,x + 5, y +5 ,"red",20 ,"",".");
+    svg_line(svg,x , y , z , v ,"red", 5);
 
 
+    }
 
     svg_finish(svg);  // Schliesst die Bilderstellung ab
 
