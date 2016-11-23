@@ -80,11 +80,11 @@ int main() {
     }
 
     double x,y;
-    x = x_svg2mat (12);
+    x = x_svg2mat (11);
     y = y_svg2mat (12);
     printf("%lf   %lf",x,y);
 
-    svg_number_as_text(svg,x + 5, y +5 ,"red",10 ,"",0);
+    svg_text(svg,x + 5, y +5 ,"red",20 ,"",".");
 
 
 
