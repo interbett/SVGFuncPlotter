@@ -1,86 +1,136 @@
 #include <stdio.h>
 #include "libSVG.h"
+#include <math.h>
 
-#define SVG_HEIGHT (N + 1) * 30 * 2
-#define SVG_WIDTH (N + 1) * 30 * 2
-#define X_MIN (N + 1) * 30
-#define X_MAX (N + 1) * 30 * 2
-#define Y_MIN (N + 1) * 30 * 2
-#define Y_MAX (N + 1) * 30
-#define N 20
+#define SIZE 15
 
+#define SVG_HEIGHT 1000
+#define SVG_WIDTH  1000
 
-double x_svg2mat(double xSVG){
+#define X_MIN       -SIZE
+#define X_MAX        SIZE
+#define Y_MIN       -SIZE
+#define Y_MAX        SIZE
 
-    double Xmat;
+#define RES 0.01
 
-    Xmat = X_MIN + (xSVG * (X_MAX - X_MIN))/SVG_WIDTH;
-    
-    return Xmat;
+//Conversion from SVG to mathematical coordinates
+double x_svg2mat(int xSVG) {
+	double xMAT;
+	xMAT = X_MIN + xSVG *(X_MAX - X_MIN)/SVG_WIDTH;
+	return xMAT;
 }
 
-double y_svg2mat(double ySVG){
-    
-    double Ymat;
-    
-    Ymat = Y_MIN + (ySVG * (Y_MAX - Y_MIN))/SVG_HEIGHT;
-    
-    return Ymat;
+double y_svg2mat(int ySVG) {
+	double yMAT;
+	yMAT = (Y_MIN + ySVG*(Y_MAX - Y_MIN) /SVG_HEIGHT)*(-1);
+	return yMAT;
 }
 
+//Conversion from mathematical coordinates to SVG
 
+int x_mat2svg(double xMAT) {
+	double xSVG;
+    int xRet;
+	xSVG = (xMAT - X_MIN)*SVG_WIDTH/(X_MAX-X_MIN);
+	xRet = (int) xSVG;
+	return xRet;
+}
 
-int main() {
-    int i;
-    
-    
-    
-    
-    int xAchseX1 = 0;
-    int xAchseX2 = X_MAX;
-    int xAchseY = X_MIN;
-    
-    int yAchseX = Y_MAX;
-    int yAchseY1 = 0;
-    int yAchseY2 = Y_MIN;
-    
-    FILE *svg = svg_create("hallo_tutor.svg", SVG_WIDTH , SVG_HEIGHT);
-    
-    svg_rect(svg, 0, 0, ((N+1)*30*2), ((N+1)*30*2), "black", 10, "grey");
-    
-    svg_line(svg, yAchseX, yAchseY1, yAchseX, yAchseY2, "red", 4);
-    svg_line(svg, xAchseX1, xAchseY, xAchseX2, xAchseY, "black", 2);
-    
-    svg_line(svg,xAchseX2 - 5, xAchseY + 5, xAchseX2, xAchseY,"balck", 20);
-    svg_line(svg,xAchseX2 - 5, xAchseY - 5, xAchseX2, xAchseY,"black", 20);
-    printf("<text x=\"%d\" y=\"%d\">x</text>\n", xAchseX2 - 10,
-           xAchseY + 20);
-    
-    for ( i = -N; i <= N; i++) {
-        if (i != 0) {
-            int j = xAchseX1 + (i + N + 1) * 30;
-            svg_line(svg,j, xAchseY + 5, j, xAchseY - 5,"black", 2);
-            svg_number_as_text(svg,j - 5, xAchseY + 20,"balck",10 ,"",i);
+int y_mat2svg(double yMAT) {
+	double ySVG;
+	int yRet;
+	ySVG = (Y_MAX - yMAT)*SVG_HEIGHT/(Y_MAX-Y_MIN);
+	yRet = (int) ySVG;
+	return yRet;
+}
+
+int main(void) {
+
+	FILE *svg = svg_create("coordinateSystem.svg", SVG_WIDTH , SVG_HEIGHT);
+// Border Rectangle
+	svg_rect(svg, 0, 0, SVG_WIDTH, SVG_HEIGHT, "grey", 2, "white");
+// X Axis
+	svg_line(svg, x_mat2svg(X_MIN), y_mat2svg(0), x_mat2svg(X_MAX), y_mat2svg(0), "black", 2);
+
+// Y Axis
+        svg_line(svg, x_mat2svg(0), y_mat2svg(Y_MIN), x_mat2svg(0), y_mat2svg(Y_MAX), "black", 2);
+
+// X Tags
+  double x = X_MIN + 1;
+  int    ix;
+
+  while(x <= (X_MAX - 1)) {
+        svg_line(svg, x_mat2svg(x), y_mat2svg(-0.2), x_mat2svg(x), y_mat2svg(0.2), "black", 1);
+        ix = (int) x;
+       
+	if (ix != 0) {
+		 svg_number_as_text(svg,x_mat2svg(x-0.2), y_mat2svg(-0.5),"black",10 ,"",ix);
+	}
+	x = x + 1;
+  }
+
+// Y Tags
+  double y = Y_MIN + 1;
+  int    iy;
+
+  while(y <= (Y_MAX - 1)) {
+        svg_line(svg, x_mat2svg(-0.2), y_mat2svg(y), x_mat2svg(0.2), y_mat2svg(y), "black", 1);
+        iy = (int) y;
+        
+	if (iy!= 0) {
+		svg_number_as_text(svg,x_mat2svg(0.3), y_mat2svg(y-0.2),"black",10 ,"",iy);
         }
-    }
-    svg_line(svg,yAchseX, yAchseY1, yAchseX - 5, yAchseY1 + 5,"black", 20);
-    svg_line(svg,yAchseX, yAchseY1, yAchseX + 5, yAchseY1 + 5,"black", 20);
-    printf("<text x=\"%d\" y=\"%d\">y</text>\n", yAchseX - 20,
-           yAchseY1 + 10);
-    for ( i = -N; i <= N; i++) {
-        if (i != 0) {
-            int j = yAchseY2 - (i + N + 1) * 30;
-            svg_line(svg,yAchseX + 5, j, yAchseX - 5, j,"balck" ,2);
-            svg_number_as_text(svg,yAchseX + 10, j + 5,"black",10,"", i);
-        }
-    }
-    
-    double x=12;
-    
-    printf("%lf\n\n",x_svg2mat(x));
-    
-    
-    svg_finish(svg);  // Schliesst die Bilderstellung ab
-    
-    return 0;
+	y = y + 1;
+  }
+
+// Arrows
+	svg_line(svg, x_mat2svg(X_MAX-0.3), y_mat2svg(0+0.3), x_mat2svg(X_MAX), y_mat2svg(0), "black", 1);
+	svg_line(svg, x_mat2svg(X_MAX-0.3), y_mat2svg(0-0.3), x_mat2svg(X_MAX), y_mat2svg(0), "black", 1);
+	svg_line(svg, x_mat2svg(0+0.3), y_mat2svg(Y_MAX-0.3), x_mat2svg(0), y_mat2svg(Y_MAX), "black", 1);
+	svg_line(svg, x_mat2svg(0-0.3), y_mat2svg(Y_MAX-0.3), x_mat2svg(0), y_mat2svg(Y_MAX), "black", 1);
+
+  
+// Function drawer
+
+  double last_x,last_y;
+  int first = 1;
+  x = X_MIN;
+  while(x <= X_MAX) {
+  	// y = x;
+	// y = sin(x);
+	y=pow(x,2);
+	// y = tan(x);
+
+       if (y < Y_MIN) {
+         y = Y_MIN;
+         first = 1;
+       }
+       if (y > Y_MAX) {
+         y = Y_MAX;
+         first = 1;
+       }
+       if (x < X_MIN) {
+         x = X_MIN;
+         first = 1;
+       }
+       if (x > X_MAX) {
+         x = X_MAX;
+        first = 1;
+       }
+
+       if ((first != 1) && ((y != last_y )|| (x != last_x))) {
+         svg_line(svg, x_mat2svg(last_x), y_mat2svg(last_y), x_mat2svg(x), y_mat2svg(y), "red", 2);
+       }
+       
+       first = 0;
+       last_x = x;
+       last_y = y;
+
+	x = x + RES;
+   }
+
+	svg_finish(svg); // Schliesst die Bilderstellung ab
+  
+  return 0;
 }
